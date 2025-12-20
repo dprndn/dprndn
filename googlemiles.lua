@@ -12,6 +12,7 @@ local CoreGui = game:GetService("CoreGui")
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
 local MainFrame = Instance.new("Frame", ScreenGui)
 local TopBar = Instance.new("Frame", MainFrame)
+local TitleLabel = Instance.new("TextLabel", TopBar) -- The title label
 local AddBtn = Instance.new("TextButton", MainFrame)
 local NukeBtn = Instance.new("TextButton", TopBar)
 local ScrollFrame = Instance.new("ScrollingFrame", MainFrame)
@@ -29,10 +30,21 @@ TopBar.Size = UDim2.new(1, 0, 0, 35)
 TopBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 TopBar.BorderSizePixel = 0
 
--- THE BLUE NUKE BUTTON
-NukeBtn.Size = UDim2.new(0, 80, 0, 35)
-NukeBtn.Position = UDim2.new(1, -80, 0, 0)
-NukeBtn.Text = "X NUKE"
+-- "Nick ♡ Miles" Title
+TitleLabel.Size = UDim2.new(0.8, 0, 1, 0)
+TitleLabel.Position = UDim2.new(0.05, 0, 0, 0)
+TitleLabel.Text = "Nick ♡ Miles" -- The title with the heart symbol
+TitleLabel.TextColor3 = Color3.new(1, 1, 1)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextSize = 16
+TitleLabel.RichText = true -- Ensure symbols display correctly
+
+-- THE BLUE NUKE BUTTON (Text changed back to "X")
+NukeBtn.Size = UDim2.new(0, 40, 0, 35)
+NukeBtn.Position = UDim2.new(1, -40, 0, 0)
+NukeBtn.Text = "X"
 NukeBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 NukeBtn.TextColor3 = Color3.new(1, 1, 1)
 NukeBtn.Font = Enum.Font.SourceSansBold
@@ -44,7 +56,6 @@ AddBtn.BackgroundColor3 = Color3.fromRGB(60, 160, 60)
 AddBtn.TextColor3 = Color3.new(1, 1, 1)
 AddBtn.Font = Enum.Font.SourceSansBold
 
--- Scrolling List Configuration
 ScrollFrame.Size = UDim2.new(0.9, 0, 0, 160)
 ScrollFrame.Position = UDim2.new(0.05, 0, 0, 100)
 ScrollFrame.BackgroundTransparency = 0.9
@@ -59,19 +70,15 @@ Status.Text = "P: Save | F: Run Once | X: Nuke"
 Status.TextColor3 = Color3.new(1, 1, 1)
 Status.BackgroundTransparency = 1
 
--- Fully Rebuilds the Visual List
+-- Functions
 local function updateUIList()
-    -- Clear current visual items
     for _, item in pairs(ScrollFrame:GetChildren()) do
         if item:IsA("Frame") then item:Destroy() end
     end
-    
-    -- Rebuild from the waypoints table
     for i, _ in ipairs(waypoints) do
         local entry = Instance.new("Frame", ScrollFrame)
         entry.Size = UDim2.new(1, -5, 0, 35)
         entry.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        
         local label = Instance.new("TextLabel", entry)
         label.Size = UDim2.new(0.7, 0, 1, 0)
         label.Position = UDim2.new(0.05, 0, 0, 0)
@@ -79,10 +86,9 @@ local function updateUIList()
         label.TextColor3 = Color3.new(1, 1, 1)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.BackgroundTransparency = 1
-        
         local del = Instance.new("TextButton", entry)
-        del.Size = UDim2.new(0, 30, 0, 30)
-        del.Position = UDim2.new(1, -35, 0, 2.5)
+        del.Size = UDim2.new(0, 30, 0, 24)
+        del.Position = UDim2.new(1, -35, 0, 3)
         del.Text = "X"
         del.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         del.TextColor3 = Color3.new(1, 1, 1)
@@ -98,29 +104,20 @@ local function addWaypoint()
     if char and char:FindFirstChild("HumanoidRootPart") then
         table.insert(waypoints, char.HumanoidRootPart.CFrame)
         updateUIList()
-        Status.Text = "Added Waypoint #"..#waypoints
     end
 end
 
 local function runSequence()
     if isTeleporting or #waypoints == 0 then return end
     local char = game.Players.LocalPlayer.Character
-    if not char:FindFirstChild(CARPET_NAME) then
-        Status.Text = "HOLD CARPET TO RUN!"
-        Status.TextColor3 = Color3.new(1, 0, 0)
-        return 
-    end
-
+    if not char:FindFirstChild(CARPET_NAME) then return end
     isTeleporting = true
-    Status.Text = "Running Sequence..."
     for i = 1, #waypoints do
         if not char:FindFirstChild(CARPET_NAME) then break end
         char:PivotTo(waypoints[i])
         task.wait(0.1) 
     end
     isTeleporting = false
-    Status.Text = "Done. Press F to retry."
-    Status.TextColor3 = Color3.new(1, 1, 1)
 end
 
 local function nuke()
@@ -128,7 +125,6 @@ local function nuke()
     ScreenGui:Destroy()
 end
 
--- Events
 AddBtn.MouseButton1Click:Connect(addWaypoint)
 NukeBtn.MouseButton1Click:Connect(nuke)
 
