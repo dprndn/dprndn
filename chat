@@ -1,0 +1,44 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local remotes = ReplicatedStorage:WaitForChild("CarpetRemotes")
+
+local addWaypoint = remotes.AddWaypoint
+local flyToWaypoint = remotes.FlyToWaypoint
+
+local waypointIndex = 0
+
+-- ADD WAYPOINT (P key)
+local function createWaypoint()
+	local char = player.Character
+	if not char then return end
+
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+
+	waypointIndex += 1
+	local name = "WP_" .. waypointIndex
+
+	addWaypoint:FireServer(name, root.Position)
+end
+
+-- TELEPORT / FLY (F key)
+local function teleport()
+	-- Simple: always fly to last waypoint
+	local name = "WP_" .. waypointIndex
+	if waypointIndex > 0 then
+		flyToWaypoint:FireServer(name)
+	end
+end
+
+UIS.InputBegan:Connect(function(input, gpe)
+	if gpe then return end
+
+	if input.KeyCode == Enum.KeyCode.P then
+		createWaypoint()
+	elseif input.KeyCode == Enum.KeyCode.F then
+		teleport()
+	end
+end)
