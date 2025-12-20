@@ -1,0 +1,37 @@
+-- Configuration
+local CARPET_NAME = "Flying Carpet" -- Change if the game uses "Rainbow Carpet"
+local waypoints = {}
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Function to save current position as a waypoint
+local function saveWaypoint(name)
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if rootPart then
+        waypoints[name] = rootPart.CFrame
+        print("Saved waypoint: " .. name)
+    end
+end
+
+-- Function to teleport to a saved waypoint
+local function teleportToWaypoint(name)
+    local carpet = character:FindFirstChild(CARPET_NAME)
+    
+    -- Check if player is holding the carpet
+    if not carpet then
+        warn("You must be holding the " .. CARPET_NAME .. " to teleport!")
+        return
+    end
+
+    if waypoints[name] then
+        character:PivotTo(waypoints[name])
+        print("Teleported to: " .. name)
+    else
+        warn("Waypoint '" .. name .. "' not found!")
+    end
+end
+
+-- Example Usage:
+-- saveWaypoint("Base")
+-- teleportToWaypoint("Base")
