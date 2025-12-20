@@ -1,0 +1,117 @@
+-- Press J to toggle show/hide
+
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Clean old instances
+for _, gui in pairs(PlayerGui:GetChildren()) do
+    if gui.Name == "BlockPromptMenu" then
+        gui:Destroy()
+    end
+end
+
+-- === BLOCK PROMPT MENU ===
+local blockGui = Instance.new("ScreenGui")
+blockGui.Name = "BlockPromptMenu"
+blockGui.ResetOnSpawn = false
+blockGui.Enabled = true
+blockGui.Parent = PlayerGui
+
+local sound = Instance.new("Sound", blockGui)
+sound.SoundId = "rbxassetid://8183518804"
+sound.Volume = 1
+
+local blockFrame = Instance.new("Frame", blockGui)
+blockFrame.Size = UDim2.new(0, 210, 0, 120)
+blockFrame.Position = UDim2.new(0.5, -105, 0.5, -60)
+blockFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+blockFrame.BackgroundTransparency = 0
+blockFrame.Visible = true
+Instance.new("UICorner", blockFrame).CornerRadius = UDim.new(0, 18)
+
+local blockAllBtn = Instance.new("TextButton", blockFrame)
+blockAllBtn.Size = UDim2.new(1, -20, 0, 55)
+blockAllBtn.Position = UDim2.new(0, 10, 0, 50)
+blockAllBtn.Text = "Prompt Block All"
+blockAllBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+blockAllBtn.TextColor3 = Color3.new(1, 1, 1)
+blockAllBtn.Font = Enum.Font.GothamBold
+blockAllBtn.TextSize = 18
+Instance.new("UICorner", blockAllBtn).CornerRadius = UDim.new(0, 14)
+
+-- Hover effects
+blockAllBtn.MouseEnter:Connect(function()
+    blockAllBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+end)
+blockAllBtn.MouseLeave:Connect(function()
+    blockAllBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+end)
+
+-- Main block function
+blockAllBtn.MouseButton1Click:Connect(function()
+    sound:Play()
+    for _, plr in Players:GetPlayers() do
+        if plr ~= LocalPlayer then
+            pcall(function()
+                StarterGui:SetCore("PromptBlockPlayer", plr)
+            end)
+            task.wait(0.25)
+        end
+    end
+    StarterGui:SetCore("SendNotification", {
+        Title = "Block Prompt",
+        Text = "Blocked all players!",
+        Duration = 4
+    })
+end)
+
+-- Close button (X)
+local closeBtn = Instance.new("TextButton", blockFrame)
+closeBtn.Size = UDim2.new(0, 30, 0, 30)
+closeBtn.Position = UDim2.new(1, -35, 0, 5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Font = Enum.Font.GothamBlack
+closeBtn.TextSize = 20
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 10)
+
+closeBtn.MouseButton1Click:Connect(function()
+    blockGui:Destroy()
+end)
+
+-- === TOGGLE WITH J KEY ===
+local menuVisible = true
+
+UserInputService.InputBegan:Connect(function(key, gameProcessed)
+    if gameProcessed then return end
+    if key.KeyCode == Enum.KeyCode.J then
+        menuVisible = not menuVisible
+        sound:Play()
+        
+        if menuVisible then
+            -- Show with smooth animation
+            blockFrame.Visible = true
+            blockFrame.Size = UDim2.new(0, 210, 0, 0)
+            TweenService:Create(blockFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {
+                Size = UDim2.new(0, 210, 0, 120)
+            }):Play()
+        else
+            -- Hide with smooth animation
+            TweenService:Create(blockFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), {
+                Size = UDim2.new(0, 210, 0, 0)
+            }):Play()
+            task.wait(0.2)
+            if not menuVisible then
+                blockFrame.Visible = false
+            end
+        end
+    end
+end)
+
+print("C'est pas tres pro tous sa nono")
