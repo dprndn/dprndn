@@ -1,7 +1,6 @@
 -- Settings
-local CARPET_NAME = "Flying Carpet"
+local CARPET_NAME = "Flying Carpet" -- Ensure this matches the tool name exactly
 local waypoints = {}
-local currentIndex = 1
 local isRunning = true
 
 -- Services
@@ -30,7 +29,7 @@ TopBar.Size = UDim2.new(1, 0, 0, 35)
 TopBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 TopBar.BorderSizePixel = 0
 
--- Close Button (Click or Press X)
+-- Close Button (X Key or Click)
 CloseBtn.Size = UDim2.new(0, 80, 0, 35)
 CloseBtn.Position = UDim2.new(1, -80, 0, 0)
 CloseBtn.Text = "CLOSE (X)"
@@ -43,7 +42,6 @@ AddBtn.Position = UDim2.new(0.05, 0, 0, 45)
 AddBtn.Text = "ADD WAYPOINT (P)"
 AddBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 AddBtn.TextColor3 = Color3.new(1,1,1)
-AddBtn.Font = Enum.Font.SourceSansBold
 
 ScrollFrame.Size = UDim2.new(0.9, 0, 0, 140)
 ScrollFrame.Position = UDim2.new(0.05, 0, 0, 100)
@@ -53,16 +51,11 @@ UIList.Padding = UDim.new(0, 5)
 
 Status.Size = UDim2.new(1, 0, 0, 40)
 Status.Position = UDim2.new(0, 0, 0, 260)
-Status.Text = "P to Add | X to Exit"
+Status.Text = "P: Add | F: TP Once | X: Exit"
 Status.TextColor3 = Color3.new(1, 1, 1)
 Status.BackgroundTransparency = 1
 
--- Function to Destroy Script
-local function shutdown()
-    isRunning = false
-    ScreenGui:Destroy()
-end
-
+-- Logic functions
 local function updateList()
     for _, item in pairs(ScrollFrame:GetChildren()) do
         if item:IsA("Frame") then item:Destroy() end
@@ -71,26 +64,41 @@ local function updateList()
         local entry = Instance.new("Frame", ScrollFrame)
         entry.Size = UDim2.new(1, 0, 0, 35)
         entry.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        
         local label = Instance.new("TextLabel", entry)
         label.Size = UDim2.new(0.7, 0, 1, 0)
         label.Text = "Point " .. i
         label.TextColor3 = Color3.new(1,1,1)
         label.BackgroundTransparency = 1
-        
-        local del = Instance.new("TextButton", entry)
-        del.Size = UDim2.new(0, 30, 0, 30)
-        del.Position = UDim2.new(1, -35, 0, 2.5)
-        del.Text = "X"
-        del.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-        del.MouseButton1Click:Connect(function()
-            table.remove(waypoints, i)
-            updateList()
-        end)
     end
 end
 
--- Input Handling (P to add, X to close)
+local function runSequenceOnce()
+    local char = game.Players.LocalPlayer.Character
+    if not char or not char:FindFirstChild(CARPET_NAME) then
+        Status.Text = "HOLD CARPET FIRST!"
+        Status.TextColor3 = Color3.new(1, 0, 0)
+        return
+    end
+
+    if #waypoints == 0 then
+        Status.Text = "ADD POINTS FIRST!"
+        return
+    end
+
+    Status.Text = "RUNNING SEQUENCE..."
+    Status.TextColor3 = Color3.new(0, 1, 0)
+
+    -- Moves through waypoints in order, exactly once
+    for i = 1, #waypoints do
+        char:PivotTo(waypoints[i])
+        task.wait(0.05) -- Time between each point in the sequence
+    end
+
+    Status.Text = "SEQUENCE FINISHED"
+    Status.TextColor3 = Color3.new(1, 1, 1)
+end
+
+-- Keybind Handling
 UIS.InputBegan:Connect(function(input, processed)
     if processed or not isRunning then return end
     
@@ -99,29 +107,17 @@ UIS.InputBegan:Connect(function(input, processed)
         if char and char:FindFirstChild("HumanoidRootPart") then
             table.insert(waypoints, char.HumanoidRootPart.CFrame)
             updateList()
+            Status.Text = "Added Point #" .. #waypoints
         end
+    elseif input.KeyCode == Enum.KeyCode.F then
+        runSequenceOnce()
     elseif input.KeyCode == Enum.KeyCode.X then
-        shutdown()
+        isRunning = false
+        ScreenGui:Destroy()
     end
 end)
 
-CloseBtn.MouseButton1Click:Connect(shutdown)
-
--- Auto-TP Loop
-task.spawn(function()
-    while isRunning do
-        task.wait(0.05) -- Very fast TP
-        if #waypoints > 0 then
-            local char = game.Players.LocalPlayer.Character
-            if char and char:FindFirstChild(CARPET_NAME) then
-                char:PivotTo(waypoints[currentIndex])
-                currentIndex = (currentIndex % #waypoints) + 1
-                Status.Text = "LOOPING..."
-                Status.TextColor3 = Color3.new(0, 1, 0)
-            else
-                Status.Text = "HOLD CARPET"
-                Status.TextColor3 = Color3.new(1, 0.5, 0)
-            end
-        end
-    end
+CloseBtn.MouseButton1Click:Connect(function()
+    isRunning = false
+    ScreenGui:Destroy()
 end)
