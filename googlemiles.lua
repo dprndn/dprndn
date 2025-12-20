@@ -30,10 +30,10 @@ TopBar.Size = UDim2.new(1, 0, 0, 35)
 TopBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 TopBar.BorderSizePixel = 0
 
--- "Nick ♡ Miles" Title
+-- "adren111" Title
 TitleLabel.Size = UDim2.new(0.8, 0, 1, 0)
 TitleLabel.Position = UDim2.new(0.05, 0, 0, 0)
-TitleLabel.Text = "Nick ♡ Miles" -- The title with the heart symbol
+TitleLabel.Text = "adren111"
 TitleLabel.TextColor3 = Color3.new(1, 1, 1)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
